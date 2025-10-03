@@ -1,14 +1,17 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import productReducer from "./productSlice";
-import cartReducer from'./cartSlice'
+import cartReducer from "./cartSlice";
+import reviewReducer from './reviewSlice'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     products: productReducer,
-    cart:cartReducer
+    cart: cartReducer,
+    reviews:reviewReducer,
   },
+  devTools: process.env.NODE_ENV !== "production", // ✅ explicitly enable devtools
 });
 
 // Export RootState type
