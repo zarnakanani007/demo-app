@@ -286,7 +286,7 @@ const AdminOrderDetails: React.FC = () => {
             </div>
 
             {/* Shipping Address */}
-            <div className="bg-white rounded-lg shadow p-6">
+            {/* <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-bold text-gray-800 mb-4">Shipping Address</h2>
               <div className="space-y-3">
                 <div>
@@ -314,7 +314,7 @@ const AdminOrderDetails: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Payment Information */}
             <div className="bg-white rounded-lg shadow p-6">

@@ -23,10 +23,12 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/email',emailRoutes)
-app.use('api/reviews',reviewRoutes)
+app.use('/api/reviews',reviewRoutes)
 
 // Serve uploads
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+

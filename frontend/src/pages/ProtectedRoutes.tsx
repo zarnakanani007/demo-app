@@ -44,3 +44,5 @@ const ProtectedRoute: React.FC<Props> = ({
 };
 
 export default ProtectedRoute;
+
+

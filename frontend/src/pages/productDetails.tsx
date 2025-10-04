@@ -26,7 +26,7 @@
 
 //     // Find the product
 //     const product = products.find((p) => p._id === id);
-    
+
 //     console.log('🔍 Product found:', product);
 
 //     // If no product found after loading, show error
@@ -119,7 +119,7 @@
 //                             className='w-full h-80 object-cover rounded-lg'
 //                         />
 //                     </div>
-                    
+
 //                     {/* Product Details */}
 //                     <div>
 //                         <h2 className='text-3xl font-bold text-gray-800 mb-4'>{product.name}</h2>
@@ -220,7 +220,7 @@ function ProductDetails() {
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
                     <p className="text-gray-600 mb-4">{error}</p>
-                    <button 
+                    <button
                         onClick={() => navigate('/home')}
                         className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                     >
@@ -237,7 +237,7 @@ function ProductDetails() {
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-red-600 mb-4">Product Not Found</h2>
                     <p className="text-gray-600 mb-4">The product you're looking for doesn't exist.</p>
-                    <button 
+                    <button
                         onClick={() => navigate('/home')}
                         className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                     >
@@ -269,7 +269,7 @@ function ProductDetails() {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Breadcrumb */}
                 <nav className="flex items-center gap-2 text-sm text-gray-600 mb-6">
-                    <button 
+                    <button
                         onClick={() => navigate('/home')}
                         className="hover:text-blue-600 flex items-center gap-1"
                     >
@@ -298,16 +298,15 @@ function ProductDetails() {
                                     {product.name}
                                 </h1>
                                 <div className="flex items-center gap-4 mb-4">
-                                    <div className="flex items-center gap-1 text-yellow-500">
+                                    {/* <div className="flex items-center gap-1 text-yellow-500">
                                         <FaStar className="w-5 h-5" />
                                         <span className="font-semibold">4.5</span>
                                         <span className="text-gray-600">(128 reviews)</span>
-                                    </div>
-                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                        product.inStock 
-                                            ? "bg-green-100 text-green-800" 
+                                    </div> */}
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${product.inStock
+                                            ? "bg-green-100 text-green-800"
                                             : "bg-red-100 text-red-800"
-                                    }`}>
+                                        }`}>
                                         {product.inStock ? "In Stock" : "Out of Stock"}
                                     </span>
                                 </div>
@@ -327,11 +326,10 @@ function ProductDetails() {
                                     <button
                                         onClick={handleAddToCart}
                                         disabled={!product.inStock}
-                                        className={`flex items-center justify-center gap-3 py-4 px-6 rounded-lg font-semibold text-lg transition-colors ${
-                                            product.inStock
+                                        className={`flex items-center justify-center gap-3 py-4 px-6 rounded-lg font-semibold text-lg transition-colors ${product.inStock
                                                 ? "bg-blue-600 text-white hover:bg-blue-700"
                                                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                        }`}
+                                            }`}
                                     >
                                         <FaShoppingCart className="w-5 h-5" />
                                         {product.inStock ? "Add to Cart" : "Out of Stock"}

@@ -1,100 +1,100 @@
 
 
 
-// import React, { useEffect } from "react";
-// import { useSelector, useDispatch } from "react-redux";
-// import type { RootState, AppDispatch } from "../redux/store";
-// import { fetchProducts } from "../redux/productSlice";
-// import { addToCart } from "../redux/cartSlice";
-// import { toast } from "react-hot-toast";
-// import { useNavigate } from "react-router-dom"; // ✅ Add this
+// // import React, { useEffect } from "react";
+// // import { useSelector, useDispatch } from "react-redux";
+// // import type { RootState, AppDispatch } from "../redux/store";
+// // import { fetchProducts } from "../redux/productSlice";
+// // import { addToCart } from "../redux/cartSlice";
+// // import { toast } from "react-hot-toast";
+// // import { useNavigate } from "react-router-dom"; // ✅ Add this
 
-// const UserDashboard: React.FC = () => {
-//   const dispatch = useDispatch<AppDispatch>();
-//   const navigate = useNavigate(); // ✅ Add navigation
-//   const { products, loading, error } = useSelector((state: RootState) => state.products);
-//   const { user } = useSelector((state: RootState) => state.auth);
+// // const UserDashboard: React.FC = () => {
+// //   const dispatch = useDispatch<AppDispatch>();
+// //   const navigate = useNavigate(); // ✅ Add navigation
+// //   const { products, loading, error } = useSelector((state: RootState) => state.products);
+// //   const { user } = useSelector((state: RootState) => state.auth);
   
-//   const isAdmin = user?.role === "admin"; // ✅ Add admin check
+// //   const isAdmin = user?.role === "admin"; // ✅ Add admin check
 
-//   // ✅ Redirect admin users to admin dashboard
-//   useEffect(() => {
-//     if (isAdmin) {
-//       navigate("/dashboard");
-//     }
-//   }, [isAdmin, navigate]);
+// //   // ✅ Redirect admin users to admin dashboard
+// //   useEffect(() => {
+// //     if (isAdmin) {
+// //       navigate("/dashboard");
+// //     }
+// //   }, [isAdmin, navigate]);
 
-//   // Fetch products on mount
-//   useEffect(() => {
-//     if (!isAdmin) { // ✅ Only fetch if not admin
-//       dispatch(fetchProducts());
-//     }
-//   }, [dispatch, isAdmin]);
+// //   // Fetch products on mount
+// //   useEffect(() => {
+// //     if (!isAdmin) { // ✅ Only fetch if not admin
+// //       dispatch(fetchProducts());
+// //     }
+// //   }, [dispatch, isAdmin]);
 
-//   const handleAddToCart = (product: any) => {
-//     if (!product.inStock) {
-//       toast.error("Product out of stock!");
-//       return;
-//     }
-//     dispatch(addToCart(product));
-//     toast.success(`${product.name} added to cart!`);
-//   };
+// //   const handleAddToCart = (product: any) => {
+// //     if (!product.inStock) {
+// //       toast.error("Product out of stock!");
+// //       return;
+// //     }
+// //     dispatch(addToCart(product));
+// //     toast.success(`${product.name} added to cart!`);
+// //   };
 
-//   // ✅ Don't show anything for admin users (they get redirected)
-//   if (isAdmin) {
-//     return (
-//       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-//         <p className="text-gray-600">Redirecting to admin dashboard...</p>
-//       </div>
-//     );
-//   }
+// //   // ✅ Don't show anything for admin users (they get redirected)
+// //   if (isAdmin) {
+// //     return (
+// //       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+// //         <p className="text-gray-600">Redirecting to admin dashboard...</p>
+// //       </div>
+// //     );
+// //   }
 
-//   return (
-//     <div className="min-h-screen bg-gray-50 p-6">
-//       <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-//         Welcome, {user?.name}!
-//       </h1>
+// //   return (
+// //     <div className="min-h-screen bg-gray-50 p-6">
+// //       <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+// //         Welcome, {user?.name}!
+// //       </h1>
 
-//       {loading && <p className="text-center text-blue-600">Loading...</p>}
-//       {error && <p className="text-center text-red-600">{error}</p>}
+// //       {loading && <p className="text-center text-blue-600">Loading...</p>}
+// //       {error && <p className="text-center text-red-600">{error}</p>}
 
-//       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-//         {products.map((product) => (
-//           <div key={product._id} className="bg-white p-4 rounded shadow flex flex-col">
-//             <img
-//               src={product.image}
-//               alt={product.name}
-//               className="w-full h-40 object-cover rounded mb-2"
-//             />
-//             <h2 className="text-xl font-semibold">{product.name}</h2>
-//             <p className="text-gray-600 truncate">{product.description}</p>
-//             <p className="font-bold mt-2">${product.price}</p>
-//             <p
-//               className={`mt-1 font-semibold ${
-//                 product.inStock ? "text-green-600" : "text-red-600"
-//               }`}
-//             >
-//               {product.inStock ? "In Stock" : "Out of Stock"}
-//             </p>
+// //       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+// //         {products.map((product) => (
+// //           <div key={product._id} className="bg-white p-4 rounded shadow flex flex-col">
+// //             <img
+// //               src={product.image}
+// //               alt={product.name}
+// //               className="w-full h-40 object-cover rounded mb-2"
+// //             />
+// //             <h2 className="text-xl font-semibold">{product.name}</h2>
+// //             <p className="text-gray-600 truncate">{product.description}</p>
+// //             <p className="font-bold mt-2">${product.price}</p>
+// //             <p
+// //               className={`mt-1 font-semibold ${
+// //                 product.inStock ? "text-green-600" : "text-red-600"
+// //               }`}
+// //             >
+// //               {product.inStock ? "In Stock" : "Out of Stock"}
+// //             </p>
 
-//             {/* ✅ This will only show for regular users (admin gets redirected) */}
-//             <button
-//               onClick={() => handleAddToCart(product)}
-//               disabled={!product.inStock}
-//               className={`mt-auto py-2 px-4 rounded font-semibold text-white ${
-//                 product.inStock ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400 cursor-not-allowed"
-//               }`}
-//             >
-//               {product.inStock ? "Add to Cart" : "Out of Stock"}
-//             </button>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
+// //             {/* ✅ This will only show for regular users (admin gets redirected) */}
+// //             <button
+// //               onClick={() => handleAddToCart(product)}
+// //               disabled={!product.inStock}
+// //               className={`mt-auto py-2 px-4 rounded font-semibold text-white ${
+// //                 product.inStock ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400 cursor-not-allowed"
+// //               }`}
+// //             >
+// //               {product.inStock ? "Add to Cart" : "Out of Stock"}
+// //             </button>
+// //           </div>
+// //         ))}
+// //       </div>
+// //     </div>
+// //   );
+// // };
 
-// export default UserDashboard;
+// // export default UserDashboard;
 
 
 
@@ -286,10 +286,10 @@ const UserDashboard: React.FC = () => {
                     <span className="text-2xl font-bold text-green-600">
                       ${product.price}
                     </span>
-                    <div className="flex items-center gap-1 text-yellow-500">
+                    {/* <div className="flex items-center gap-1 text-yellow-500">
                       <FaStar className="w-4 h-4" />
                       <span className="text-sm text-gray-600">4.5</span>
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className={`text-sm font-medium ${
@@ -333,3 +333,5 @@ const UserDashboard: React.FC = () => {
 };
 
 export default UserDashboard;
+
+
