@@ -313,7 +313,7 @@ const Profile: React.FC = () => {
                         <FaShoppingBag className="text-gray-400 text-4xl mx-auto mb-4" />
                         <p className="text-gray-600">No orders yet</p>
                         <button
-                          onClick={() => navigate("/home")}
+                          onClick={() => navigate("/Home")}
                           className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
                           Start Shopping

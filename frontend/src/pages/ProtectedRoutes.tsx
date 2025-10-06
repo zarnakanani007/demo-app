@@ -22,7 +22,7 @@ const ProtectedRoute: React.FC<Props> = ({
 
   // Redirect logged-in users from auth pages
   if (redirectIfLoggedIn && token) {
-    return <Navigate to={user?.role === "admin" ? "/dashboard" : "/home"} replace />;
+    return <Navigate to={user?.role === "admin" ? "/dashboard" : "/Home"} replace />;
   }
 
   // Require authentication
@@ -32,7 +32,7 @@ const ProtectedRoute: React.FC<Props> = ({
 
   // Admin-only routes
   if (adminOnly && user?.role !== "admin") {
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/Home" replace />;
   }
 
   // Block admin from user routes

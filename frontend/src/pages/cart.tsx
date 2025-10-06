@@ -60,7 +60,7 @@ const Cart: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-800 mb-4">Your cart is empty</h2>
           <p className="text-gray-600 mb-8">Add some products to get started!</p>
           <button
-            onClick={() => navigate("/home")}
+            onClick={() => navigate("/Home")}
             className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
           >
             Continue Shopping
@@ -153,7 +153,7 @@ const Cart: React.FC = () => {
             </div>
 
             <button
-              onClick={() => navigate("/home")}
+              onClick={() => navigate("/Home")}
               className="w-full mt-4 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
             >
               Continue Shopping

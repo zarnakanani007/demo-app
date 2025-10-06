@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-
-
 import axios from "axios";
 
 export interface Product {
@@ -11,6 +9,7 @@ export interface Product {
   price: number;
   inStock: boolean;
   image: string;
+  category: string; // ADD category field
 }
 
 interface ProductState {
@@ -25,12 +24,16 @@ const initialState: ProductState = {
   error: null,
 };
 
-// Fetch products
+// Fetch products (with optional category filter)
 export const fetchProducts = createAsyncThunk(
   "products/fetchAll",
-  async (_, { rejectWithValue }) => {
+  async (category?: string, { rejectWithValue }) => { // ADD optional category parameter
     try {
-      const response = await axios.get("http://localhost:5000/api/products");
+      const url = category && category !== 'all'
+        ? `http://localhost:5000/api/products?category=${category}`
+        : "http://localhost:5000/api/products";
+
+      const response = await axios.get(url);
       return response.data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || "Failed to fetch products");
@@ -64,7 +67,7 @@ export const updateProduct = createAsyncThunk(
       const response = await axios.put(`http://localhost:5000/api/products/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`, // ✅ fix
+          Authorization: `Bearer ${token}`,
         },
       });
       return response.data;
@@ -131,7 +134,7 @@ const productSlice = createSlice({
       .addCase(updateProduct.fulfilled, (state, action: PayloadAction<Product>) => {
         state.loading = false;
         const index = state.products.findIndex((p) => p._id === action.payload._id);
-        if (index !== -1) state.products[index] = action.payload; // ✅ update state
+        if (index !== -1) state.products[index] = action.payload;
       })
       .addCase(updateProduct.rejected, (state, action) => {
         state.loading = false;

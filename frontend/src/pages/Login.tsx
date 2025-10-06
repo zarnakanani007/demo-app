@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import axios from "axios";
@@ -29,8 +30,12 @@ const Login: React.FC = () => {
         password,
       });
 
+      // ✅ ADDED: Save to localStorage before dispatching
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      
       dispatch(setCredentials(res.data)); // { token, user }
-      navigate("/"); // Redirect to home after login
+      navigate("/"); // Redirect to Home after login
     } catch (err: any) {
       setMessage(err.response?.data?.message || "Login failed");
     } finally {
@@ -53,8 +58,12 @@ const Login: React.FC = () => {
         token: credentialResponse.credential,
       });
 
+      // ✅ ADDED: Save to localStorage before dispatching
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      
       dispatch(setCredentials(res.data)); // { token, user }
-      navigate("/"); // Redirect to home
+      navigate("/"); // Redirect to Home
     } catch (err: any) {
       setMessage(err.response?.data?.message || "Google login failed!");
     } finally {
@@ -96,8 +105,9 @@ const Login: React.FC = () => {
 
         <button
           type="submit"
-          className={`w-full p-2 rounded text-white mb-3 ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-            }`}
+          className={`w-full p-2 rounded text-white mb-3 ${
+            loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+          }`}
           disabled={loading}
         >
           {loading ? "Logging in..." : "Login"}
@@ -109,7 +119,7 @@ const Login: React.FC = () => {
         </div>
 
         <p className="text-sm text-gray-600 text-center mt-3">
-          Don’t have an account?{" "}
+          Don't have an account?{" "}
           <Link to="/register" className="text-blue-600 hover:underline">
             Register
           </Link>

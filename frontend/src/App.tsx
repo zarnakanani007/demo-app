@@ -40,12 +40,13 @@ const App: React.FC = () => {
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
+  //  logout function
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logout()); // This will clear Redux state AND localStorage
     navigate("/login");
   };
 
-  // Role-aware NavBar links
+  // NavBar links
   const navLinks = !token
     ? [
         { name: "Register", path: "/register", color: "green" },
@@ -57,16 +58,38 @@ const App: React.FC = () => {
         { name: "Create Product", path: "/dashboard/create-product", color: "blue" },
         { name: "View Users", path: "/dashboard/users", color: "green" },
         { name: "View Products", path: "/dashboard/products", color: "purple" },
-        { name: "Profile", path: "/profile", color: "black" },
+        { name: "Profile", path: "/profile", color: "gray" },
       ]
     : [
-        { name: "Home", path: "/home", color: "purple" },
-        { name: "Profile", path: "/profile", color: "black" },
-        { name: "Orders", path: "/orders", color: "black" },
+        { name: "Home", path: "/Home", color: "purple" },
+        { name: "Profile", path: "/profile", color: "gray" },
+        { name: "Orders", path: "/orders", color: "gray" },
       ];
 
-  const getLinkClasses = (isActive: boolean, link: any) =>
-    `${isActive ? `bg-${link.color}-600 text-red-500` : `text-${link.color}-600 hover:bg-${link.color}-100`} px-4 py-2 rounded-md font-semibold`;
+  //  Tailwind CSS
+  const getLinkClasses = (isActive: boolean, link: any) => {
+    const baseClasses = "px-4 py-2 rounded-md font-semibold transition-colors duration-200";
+    
+    if (isActive) {
+      switch (link.color) {
+        case "indigo": return `${baseClasses} bg-indigo-600 text-white`;
+        case "blue": return `${baseClasses} bg-blue-600 text-white`;
+        case "green": return `${baseClasses} bg-green-600 text-white`;
+        case "purple": return `${baseClasses} bg-purple-600 text-white`;
+        case "gray": return `${baseClasses} bg-gray-600 text-white`;
+        default: return `${baseClasses} bg-gray-600 text-white`;
+      }
+    } else {
+      switch (link.color) {
+        case "indigo": return `${baseClasses} text-indigo-600 hover:bg-indigo-100`;
+        case "blue": return `${baseClasses} text-blue-600 hover:bg-blue-100`;
+        case "green": return `${baseClasses} text-green-600 hover:bg-green-100`;
+        case "purple": return `${baseClasses} text-purple-600 hover:bg-purple-100`;
+        case "gray": return `${baseClasses} text-gray-600 hover:bg-gray-100`;
+        default: return `${baseClasses} text-gray-600 hover:bg-gray-100`;
+      }
+    }
+  };
 
   return (
     <>
@@ -77,7 +100,11 @@ const App: React.FC = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex gap-4 items-center">
           {navLinks.map((link) => (
-            <NavLink key={link.name} to={link.path} className={({ isActive }) => getLinkClasses(isActive, link)}>
+            <NavLink 
+              key={link.name} 
+              to={link.path} 
+              className={({ isActive }) => getLinkClasses(isActive, link)}
+            >
               {link.name}
             </NavLink>
           ))}
@@ -102,11 +129,11 @@ const App: React.FC = () => {
             </div>
           )}
 
-          {/* Logout button */}
+          {/* ✅ CORRECTED: Logout button */}
           {token && (
             <button
               onClick={handleLogout}
-              className="px-4 py-2 rounded-md font-semibold bg-red-600 text-white hover:bg-red-700"
+              className="px-4 py-2 rounded-md font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors duration-200"
             >
               Logout
             </button>
@@ -114,7 +141,11 @@ const App: React.FC = () => {
         </div>
 
         {/* Mobile Menu Button */}
-        <button className="md:hidden text-gray-800 focus:outline-none" onClick={toggleMobileMenu}>
+        <button 
+          className="md:hidden text-gray-800 focus:outline-none" 
+          onClick={toggleMobileMenu}
+          aria-label="Toggle mobile menu"
+        >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -145,9 +176,10 @@ const App: React.FC = () => {
             <NavLink
               to="/cart"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="relative px-4 py-2 rounded-md text-yellow-600 hover:bg-yellow-100"
+              className="relative px-4 py-2 rounded-md text-yellow-600 hover:bg-yellow-100 flex items-center gap-2"
             >
-              <FaShoppingCart className="w-5 h-5 inline" />
+              <FaShoppingCart className="w-5 h-5" />
+              Cart
               {cartItems.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                   {cartItems.length}
@@ -156,13 +188,14 @@ const App: React.FC = () => {
             </NavLink>
           )}
 
+          {/* ✅ CORRECTED: Mobile logout button */}
           {token && (
             <button
               onClick={() => {
                 handleLogout();
                 setIsMobileMenuOpen(false);
               }}
-              className="px-4 py-2 font-semibold text-red-600 hover:bg-red-100 rounded"
+              className="px-4 py-2 font-semibold text-white bg-red-600 hover:bg-red-700 rounded transition-colors duration-200 text-left"
             >
               Logout
             </button>
@@ -173,36 +206,57 @@ const App: React.FC = () => {
       {/* Toast notifications */}
       <Toaster position="top-center" />
 
-      {/* Routes - SIMPLIFIED AND CORRECT ORDER */}
+      {/* Routes */}
       <Routes>
         {/* Public Routes */}
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/register" 
+          element={
+            <ProtectedRoute redirectIfLoggedIn>
+              <Register />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/login" 
+          element={
+            <ProtectedRoute redirectIfLoggedIn>
+              <Login />
+            </ProtectedRoute>
+          } 
+        />
 
-        {/* Product Routes - MUST COME FIRST */}
+        {/* Product Routes */}
         <Route path="/products/:id" element={<ProductDetails />} />
         <Route path="/products/:id/reviews" element={<ProductReviews />} />
 
         {/* Protected Routes */}
-        <Route path="/home" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+        <Route path="/Home" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/cart" element={<ProtectedRoute allowAdmin={false}><Cart /></ProtectedRoute>} />
-        <Route path="/orders" element={<ProtectedRoute allowAdmin={false}><Orders /></ProtectedRoute>} />
-        <Route path="/checkout-confirmation" element={<ProtectedRoute allowAdmin={false}><CheckoutConfirmation /></ProtectedRoute>} />
-        <Route path="/checkout-success" element={<ProtectedRoute allowAdmin={false}><CheckoutSuccess /></ProtectedRoute>} />
+        <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+        <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+        <Route path="/checkout-confirmation" element={<ProtectedRoute><CheckoutConfirmation /></ProtectedRoute>} />
+        <Route path="/checkout-success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
         <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
 
         {/* Admin Routes */}
-        <Route path="/dashboard" element={<ProtectedRoute adminOnly><Dashboard /></ProtectedRoute>} />
-        <Route path="/dashboard/create-product" element={<ProtectedRoute adminOnly><CreateProduct /></ProtectedRoute>} />
-        <Route path="/dashboard/users" element={<ProtectedRoute adminOnly><UsersPage /></ProtectedRoute>} />
-        <Route path="/dashboard/products" element={<ProtectedRoute adminOnly><ProductsPage /></ProtectedRoute>} />
-        <Route path="/dashboard/orders" element={<ProtectedRoute adminOnly><AdminOrders /></ProtectedRoute>} />
-        <Route path="/dashboard/orders/:id" element={<ProtectedRoute adminOnly><AdminOrderDetails /></ProtectedRoute>} />
-        <Route path="/dashboard/analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/create-product" element={<ProtectedRoute><CreateProduct /></ProtectedRoute>} />
+        <Route path="/dashboard/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+        <Route path="/dashboard/products" element={<ProtectedRoute><ProductsPage /></ProtectedRoute>} />
+        <Route path="/dashboard/orders" element={<ProtectedRoute><AdminOrders /></ProtectedRoute>} />
+        <Route path="/dashboard/orders/:id" element={<ProtectedRoute><AdminOrderDetails /></ProtectedRoute>} />
+        <Route path="/dashboard/analytics" element={<ProtectedRoute><AdminAnalytics /></ProtectedRoute>} />
 
         {/* Default Route */}
-        <Route path="/" element={<ProtectedRoute>{user?.role === "admin" ? <Dashboard /> : <UserDashboard />}</ProtectedRoute>} />
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              {user?.role === "admin" ? <Dashboard /> : <UserDashboard />}
+            </ProtectedRoute>
+          } 
+        />
 
         {/* 404 Fallback */}
         <Route path="*" element={<div className="min-h-screen flex items-center justify-center"><h1 className="text-2xl font-bold">404 - Page Not Found</h1></div>} />
@@ -212,5 +266,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
-

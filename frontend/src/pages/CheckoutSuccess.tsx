@@ -54,7 +54,7 @@ const CheckoutSuccess: React.FC = () => {
           </button>
           
           <button
-            onClick={() => navigate("/home")}
+            onClick={() => navigate("/Home")}
             className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold"
           >
             <FaHome className="w-4 h-4" />

@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema({
@@ -14,9 +15,15 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  image:{
-    type:String,
-    required:true,
+  image: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    required: true,
+    enum: ['Shoes', 'Clothing', 'Electronics', 'Accessories', 'Books', 'Sports', 'Home', 'Beauty'],
+    default: 'Clothing'
   }
 }, { timestamps: true });
 

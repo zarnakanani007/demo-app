@@ -163,7 +163,7 @@ const Orders: React.FC = () => {
             </p>
             {orders.length === 0 && (
               <button
-                onClick={() => navigate("/home")}
+                onClick={() => navigate("/Home")}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
                 Start Shopping
