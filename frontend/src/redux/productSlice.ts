@@ -9,7 +9,7 @@ export interface Product {
   price: number;
   inStock: boolean;
   image: string;
-  category: string; // ADD category field
+  category: string; 
 }
 
 interface ProductState {

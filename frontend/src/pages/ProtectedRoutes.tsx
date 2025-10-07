@@ -10,15 +10,15 @@ interface Props {
   redirectIfLoggedIn?: boolean;
 }
 
-const ProtectedRoute: React.FC<Props> = ({ 
-  children, 
-  adminOnly = false, 
+const ProtectedRoute: React.FC<Props> = ({
+  children,
+  adminOnly = false,
   allowAdmin = true,
-  redirectIfLoggedIn = false 
+  redirectIfLoggedIn = false
 }) => {
   const { token, user } = useSelector((state: RootState) => state.auth);
 
-  console.log('🛡️ ProtectedRoute:', { token, user: user?.role, adminOnly, allowAdmin });
+  console.log(' ProtectedRoute:', { token, user: user?.role, adminOnly, allowAdmin });
 
   // Redirect logged-in users from auth pages
   if (redirectIfLoggedIn && token) {

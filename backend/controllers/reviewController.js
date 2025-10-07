@@ -158,10 +158,10 @@ export const getReviewStats = async (req, res) => {
     const { productId } = req.params;
 
     const reviews = await Review.find({ product: productId });
-    
+
     const totalReviews = reviews.length;
-    const averageRating = totalReviews > 0 
-      ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
+    const averageRating = totalReviews > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
       : 0;
 
     res.status(200).json({

@@ -29,7 +29,7 @@ const OrderSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-//ADD this to auto-generate order numbers
+// auto-generate order numbers
 OrderSchema.pre('save',async function (next) {
   if(this.isNew){
     const count=await mongoose.model('Order').countDocuments();

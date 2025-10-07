@@ -6,7 +6,7 @@ import { fetchProductReviews, addReview } from '../redux/reviewSlice';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
-// Simple Star Rating Component
+
 const StarRating: React.FC<{ 
   rating: number; 
   onRatingChange?: (rating: number) => void; 
@@ -20,7 +20,7 @@ const StarRating: React.FC<{
           type="button"
           onClick={() => !readonly && onRatingChange?.(star)}
           disabled={readonly}
-          className={`text-2xl ${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'} ${
+          className={`text-2xl ${readonly ? 'cursor-pointer' : 'cursor-pointer hover:scale-110'} ${
             star <= rating ? 'text-yellow-400' : 'text-gray-300'
           }`}
         >

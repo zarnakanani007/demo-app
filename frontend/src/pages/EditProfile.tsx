@@ -41,7 +41,7 @@ const EditProfile: React.FC = () => {
 
       setSuccess("Profile updated successfully!");
       // Redirect to profile after short delay
-      setTimeout(() => navigate("/profile"), 1500);
+      setTimeout(() => navigate("/profile"), 1000);
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to update profile");
     }

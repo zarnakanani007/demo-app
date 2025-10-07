@@ -15,7 +15,7 @@ import {
 
 const router = express.Router();
 
-// -------------------- Multer Config --------------------
+// Multer Config 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(process.cwd(), "uploads");
@@ -37,7 +37,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// -------------------- Routes --------------------
+// Routes
 // Register (with avatar)
 router.post("/register", upload.single("avatar"), registerUser);
 

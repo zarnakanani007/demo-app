@@ -1,5 +1,4 @@
 
-
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from '@reduxjs/toolkit'
 
@@ -22,7 +21,7 @@ interface AuthState {
 const getInitialState = (): AuthState => {
   const token = localStorage.getItem("token");
   const userStr = localStorage.getItem("user");
-  
+
   return {
     user: userStr ? JSON.parse(userStr) : null,
     token: token,
@@ -40,7 +39,7 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.loading = false;
       state.error = null;
-      
+
       // Save to localStorage
       localStorage.setItem("token", action.payload.token);
       localStorage.setItem("user", JSON.stringify(action.payload.user));
@@ -50,7 +49,7 @@ const authSlice = createSlice({
       state.token = null;
       state.loading = false;
       state.error = null;
-      
+
       // Clear localStorage
       localStorage.removeItem("token");
       localStorage.removeItem("user");

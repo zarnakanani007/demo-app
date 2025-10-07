@@ -1,15 +1,15 @@
 import Order from "../models/Order.js";
-import User from "../models/User.js"; // ✅ ADD THIS IMPORT
+import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import { 
-  sendOrderConfirmationEmail, 
-  sendOrderStatusUpdateEmail 
-} from "../services/emailService.js"; // ✅ ADD THIS IMPORT
+import {
+  sendOrderConfirmationEmail,
+  sendOrderStatusUpdateEmail
+} from "../services/emailService.js";
 
 // Create new order - UPDATED WITH EMAIL
 export const createOrder = async (req, res) => {
   try {
-    // 1️⃣ Get token from headers
+    //  Get token from headers
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer")) {
       return res.status(401).json({ message: "Unauthorized, token missing!" });
@@ -26,12 +26,12 @@ export const createOrder = async (req, res) => {
     const userId = decoded.id;
     const { items } = req.body;
 
-    // 2️⃣ Validate items
+    //  Validate items
     if (!items || items.length === 0) {
       return res.status(400).json({ message: "No items in order!" });
     }
 
-    // 3️⃣ Map items to match schema & ensure proper types
+    // Map items to match schema & ensure proper types
     const formattedItems = items.map((i) => ({
       productId: i._id || i.productId,
       name: i.name,
@@ -40,15 +40,15 @@ export const createOrder = async (req, res) => {
       image: i.image,
     }));
 
-    // 4️⃣ Calculate total
+    //  Calculate total
     const total = formattedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    // 5️⃣ Validate total
+    //  Validate total
     if (total <= 0) {
       return res.status(400).json({ message: "Invalid order total!" });
     }
 
-    // 6️⃣ Create order
+    //  Create order
     const newOrder = new Order({
       user: userId,
       items: formattedItems,
@@ -57,7 +57,7 @@ export const createOrder = async (req, res) => {
 
     await newOrder.save();
 
-    // ✅ 7️⃣ SEND ORDER CONFIRMATION EMAIL - ADD THIS SECTION
+    // SEND ORDER CONFIRMATION EMAIL - ADD THIS SECTION
     try {
       const user = await User.findById(userId);
       if (user && user.email) {
@@ -66,12 +66,11 @@ export const createOrder = async (req, res) => {
       }
     } catch (emailError) {
       console.error("Failed to send confirmation email:", emailError);
-      // Don't fail the order if email fails
     }
 
-    res.status(201).json({ 
-      message: "Order placed successfully", 
-      order: newOrder 
+    res.status(201).json({
+      message: "Order placed successfully",
+      order: newOrder
     });
   } catch (err) {
     console.error("Order creation error:", err);
@@ -137,6 +136,35 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
+// // get single order by ID
+// export const getOrderById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     const order = await Order.findById(id).populate("user", "name email");
+//     console.log(order);
+    
+
+//     if (!order) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Order not found!"
+//       })
+//     }
+//     res.status(200).json({
+//       success: true,
+//       order
+//     })
+//   } catch (error) {
+//     console.error("Get order by ID error:", error)
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to fetch order",
+//       error: error.message
+//     })
+//   }
+// }
+
 // Update order status (Admin only) - UPDATED WITH EMAIL
 export const updateOrderStatus = async (req, res) => {
   try {
@@ -152,7 +180,7 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // ✅ GET CURRENT ORDER TO COMPARE STATUS - ADD THIS SECTION
+    //  GET CURRENT ORDER TO COMPARE STATUS - ADD THIS SECTION
     const currentOrder = await Order.findById(id).populate('user', 'name email');
     if (!currentOrder) {
       return res.status(404).json({
@@ -170,14 +198,14 @@ export const updateOrderStatus = async (req, res) => {
       { new: true, runValidators: true }
     ).populate('user', 'name email');
 
-    // ✅ SEND STATUS UPDATE EMAIL - ADD THIS SECTION
+    // SEND STATUS UPDATE EMAIL - ADD THIS SECTION
     if (oldStatus !== status && order.user && order.user.email) {
       try {
         await sendOrderStatusUpdateEmail(order, order.user, oldStatus, status);
         console.log(`Order status update email sent to ${order.user.email}`);
       } catch (emailError) {
         console.error("Failed to send status update email:", emailError);
-        // Don't fail the status update if email fails
+
       }
     }
 

@@ -4,19 +4,28 @@ import axios from "axios";
 import type { RootState, AppDispatch } from "../redux/store";
 import { useNavigate } from "react-router-dom";
 import { setCredentials } from "../redux/authSlice";
-import { FaUser, FaEdit, FaShoppingBag, FaEnvelope, FaCalendar, FaCamera, FaSave, FaTimes, FaUsers, FaBox, FaChartBar } from "react-icons/fa";
+import { FaUser, FaEdit, FaShoppingBag, FaEnvelope, FaCalendar, FaCamera, FaSave, FaTimes } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-interface AdminStats {
-  totalUsers: number;
-  totalProducts: number;
-  totalOrders: number;
-  totalRevenue: number;
+interface OrderItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
 }
 
-const AdminProfile: React.FC = () => {
+interface Order {
+  _id: string;
+  items: OrderItem[];
+  total: number;
+  status: string;
+  createdAt: string;
+}
+
+const Profile: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user, token } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
@@ -25,14 +34,10 @@ const AdminProfile: React.FC = () => {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
+
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
-  const [adminStats, setAdminStats] = useState<AdminStats>({
-    totalUsers: 0,
-    totalProducts: 0,
-    totalOrders: 0,
-    totalRevenue: 0
-  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,7 +48,7 @@ const AdminProfile: React.FC = () => {
       .max(50, "Name must be less than 50 characters")
       .required("Name is required"),
     email: Yup.string()
-      .email("Invalid email address,please enter valid email address!")
+      .email("Invalid email address")
       .required("Email is required"),
   });
 
@@ -60,13 +65,13 @@ const AdminProfile: React.FC = () => {
     enableReinitialize: true,
   });
 
-  // Fetch admin profile and stats
+  // Fetch user profile and orders
   useEffect(() => {
-    const fetchAdminProfileAndStats = async () => {
+    const fetchProfileAndOrders = async () => {
       if (!token) return;
 
       try {
-        // Fetch admin profile
+        // Fetch user profile
         const profileRes = await axios.get("http://localhost:5000/api/auth/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -78,21 +83,21 @@ const AdminProfile: React.FC = () => {
         });
         setAvatarPreview(userData.avatar || null);
 
-        // Fetch admin stats
-        const statsRes = await axios.get("http://localhost:5000/api/admin/stats", {
+        // Fetch orders
+        const ordersRes = await axios.get("http://localhost:5000/api/orders/user", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setAdminStats(statsRes.data);
+        setOrders(ordersRes.data.orders || []);
       } catch (error) {
-        console.error("Error fetching admin data:", error);
-        toast.error("Failed to load admin data");
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load profile data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAdminProfileAndStats();
+    fetchProfileAndOrders();
   }, [token]);
 
   // Handle avatar selection
@@ -162,12 +167,42 @@ const AdminProfile: React.FC = () => {
     setEditing(false);
   };
 
+  // Delete account
+  const handleDeleteAccount = async () => {
+    if (!token) {
+      toast.error("Please log in");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete("http://localhost:5000/api/auth/delete", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Account deleted successfully!");
+      navigate("/login");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete account");
+    }
+  };
+
+  const stats = {
+    totalOrders: orders.length,
+    totalSpent: orders.reduce((sum, order) => sum + order.total, 0),
+    pendingOrders: orders.filter(order => order.status === "processing").length,
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto cursor-default"></div>
-          <p className="mt-4 text-lg text-gray-600 cursor-default">Loading admin profile...</p>
+          <p className="mt-4 text-lg text-gray-600 cursor-default">Loading profile...</p>
         </div>
       </div>
     );
@@ -194,7 +229,7 @@ const AdminProfile: React.FC = () => {
                   </div>
                 )}
 
-                {/*  avatar upload */}
+                {/* Camera icon for avatar upload */}
                 <button
                   onClick={handleAvatarClick}
                   className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors cursor-pointer"
@@ -213,10 +248,10 @@ const AdminProfile: React.FC = () => {
               </div>
 
               <div>
-                <h1 className="text-2xl font-bold text-white cursor-default">{user?.name} </h1>
+                <h1 className="text-2xl font-bold text-white cursor-default">{user?.name}</h1>
                 <p className="text-blue-100 cursor-default">{user?.email}</p>
                 <p className="text-blue-100 text-sm cursor-default">
-                  Admin since {new Date(user?.createdAt || Date.now()).getFullYear()}
+                  Member since {new Date(user?.createdAt || Date.now()).getFullYear()}
                 </p>
               </div>
             </div>
@@ -230,49 +265,35 @@ const AdminProfile: React.FC = () => {
               <nav className="space-y-2">
                 <button
                   onClick={() => setActiveTab("overview")}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors cursor-pointer ${activeTab === "overview"
-                    ? "bg-blue-50 text-blue-600 border border-blue-200"
-                    : "text-gray-600 hover:bg-gray-50"
-                    }`}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors cursor-pointer ${
+                    activeTab === "overview"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
                 >
-                  📊 Admin Overview
+                  📊 Overview
+                </button>
+                <button
+                  onClick={() => setActiveTab("orders")}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors cursor-pointer ${
+                    activeTab === "orders"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  🛍️ My Orders
                 </button>
                 <button
                   onClick={() => setActiveTab("settings")}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors cursor-pointer ${activeTab === "settings"
-                    ? "bg-blue-50 text-blue-600 border border-blue-200"
-                    : "text-gray-600 hover:bg-gray-50"
-                    }`}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors cursor-pointer ${
+                    activeTab === "settings"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
                 >
-                  ⚙️ Profile Settings
+                  ⚙️ Settings
                 </button>
               </nav>
-
-              <div className="mt-6 space-y-3">
-                <button
-                  onClick={() => navigate("/dashboard")}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold transition-colors cursor-pointer"
-                >
-                  <FaChartBar className="w-4 h-4" />
-                  Dashboard
-                </button>
-
-                <button
-                  onClick={() => navigate("/dashboard/users")}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors cursor-pointer"
-                >
-                  <FaUsers className="w-4 h-4" />
-                  Manage Users
-                </button>
-
-                <button
-                  onClick={() => navigate("/dashboard/products")}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold transition-colors cursor-pointer"
-                >
-                  <FaBox className="w-4 h-4" />
-                  Manage Products
-                </button>
-              </div>
 
               <button
                 onClick={() => setEditing(true)}
@@ -288,60 +309,80 @@ const AdminProfile: React.FC = () => {
           <div className="lg:col-span-3">
             {activeTab === "overview" && (
               <div className="space-y-6">
-                {/* Admin Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="bg-white rounded-lg shadow p-6 text-center cursor-default">
-                    <FaUsers className="text-blue-500 text-3xl mx-auto mb-3" />
-                    <div className="text-2xl font-bold text-blue-600">{adminStats.totalUsers}</div>
-                    <div className="text-gray-600">Total Users</div>
-                  </div>
-                  <div className="bg-white rounded-lg shadow p-6 text-center cursor-default">
-                    <FaBox className="text-green-500 text-3xl mx-auto mb-3" />
-                    <div className="text-2xl font-bold text-green-600">{adminStats.totalProducts}</div>
-                    <div className="text-gray-600">Total Products</div>
-                  </div>
-                  <div className="bg-white rounded-lg shadow p-6 text-center cursor-default">
-                    <FaShoppingBag className="text-purple-500 text-3xl mx-auto mb-3" />
-                    <div className="text-2xl font-bold text-purple-600">{adminStats.totalOrders}</div>
+                    <div className="text-2xl font-bold text-blue-600">{stats.totalOrders}</div>
                     <div className="text-gray-600">Total Orders</div>
                   </div>
                   <div className="bg-white rounded-lg shadow p-6 text-center cursor-default">
-                    <FaChartBar className="text-orange-500 text-3xl mx-auto mb-3" />
-                    <div className="text-2xl font-bold text-orange-600">
-                      ${adminStats.totalRevenue.toFixed(2)}
+                    <div className="text-2xl font-bold text-green-600">
+                      ${stats.totalSpent.toFixed(2)}
                     </div>
-                    <div className="text-gray-600">Total Revenue</div>
+                    <div className="text-gray-600">Total Spent</div>
+                  </div>
+                  <div className="bg-white rounded-lg shadow p-6 text-center cursor-default">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {stats.pendingOrders}
+                    </div>
+                    <div className="text-gray-600">Pending Orders</div>
                   </div>
                 </div>
 
-                {/* Quick Actions */}
+                {/* Recent Orders */}
                 <div className="bg-white rounded-lg shadow">
                   <div className="px-6 py-4 border-b">
-                    <h2 className="text-xl font-semibold text-gray-800 cursor-default">Quick Actions</h2>
+                    <h2 className="text-xl font-semibold text-gray-800 cursor-default">Recent Orders</h2>
                   </div>
                   <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <button
-                        onClick={() => navigate("/dashboard/create-product")}
-                        className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer text-center"
-                      >
-                        <FaBox className="text-blue-500 text-2xl mx-auto mb-2" />
-                        <p className="font-semibold text-gray-800">Add New Product</p>
-                        <p className="text-sm text-gray-600">Create a new product listing</p>
-                      </button>
-
-                      <button
-                        onClick={() => navigate("/dashboard/orders")}
-                        className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors cursor-pointer text-center"
-                      >
-                        <FaShoppingBag className="text-green-500 text-2xl mx-auto mb-2" />
-                        <p className="font-semibold text-gray-800">View Orders</p>
-                        <p className="text-sm text-gray-600">Manage customer orders</p>
-                      </button>
-                    </div>
+                    {orders.length === 0 ? (
+                      <div className="text-center py-8">
+                        <FaShoppingBag className="text-gray-400 text-4xl mx-auto mb-4 cursor-default" />
+                        <p className="text-gray-600 cursor-default">No orders yet</p>
+                        <button
+                          onClick={() => navigate("/Home")}
+                          className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                        >
+                          Start Shopping
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {orders.slice(0, 5).map((order) => (
+                          <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-default">
+                            <div>
+                              <p className="font-semibold text-gray-800">
+                                Order #{order._id.slice(-8)}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-green-600">
+                                ${order.total.toFixed(2)}
+                              </p>
+                              <span className={`px-2 py-1 rounded-full text-xs cursor-default ${
+                                order.status === "delivered"
+                                  ? "bg-green-100 text-green-800"
+                                  : order.status === "shipped"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}>
+                                {order.status}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
+            )}
+
+            {activeTab === "orders" && (
+              <OrdersTab orders={orders} loading={loading} />
             )}
 
             {activeTab === "settings" && (
@@ -350,7 +391,7 @@ const AdminProfile: React.FC = () => {
                 {editing && (
                   <div className="bg-white rounded-lg shadow p-6">
                     <h3 className="text-xl font-semibold text-gray-800 mb-4 cursor-default">
-                      Edit Admin Profile
+                      Edit Profile
                     </h3>
                     <form onSubmit={formik.handleSubmit} className="space-y-4">
                       {/* Name Field */}
@@ -364,10 +405,11 @@ const AdminProfile: React.FC = () => {
                           value={formik.values.name}
                           onChange={formik.handleChange}
                           onBlur={formik.handleBlur}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-text ${formik.touched.name && formik.errors.name
-                            ? "border-red-500"
-                            : "border-gray-300"
-                            }`}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-text ${
+                            formik.touched.name && formik.errors.name 
+                              ? "border-red-500" 
+                              : "border-gray-300"
+                          }`}
                           required
                         />
                         {formik.touched.name && formik.errors.name && (
@@ -386,10 +428,11 @@ const AdminProfile: React.FC = () => {
                           value={formik.values.email}
                           onChange={formik.handleChange}
                           onBlur={formik.handleBlur}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-text ${formik.touched.email && formik.errors.email
-                            ? "border-red-500"
-                            : "border-gray-300"
-                            }`}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-text ${
+                            formik.touched.email && formik.errors.email 
+                              ? "border-red-500" 
+                              : "border-gray-300"
+                          }`}
                           required
                         />
                         {formik.touched.email && formik.errors.email && (
@@ -401,10 +444,11 @@ const AdminProfile: React.FC = () => {
                         <button
                           type="submit"
                           disabled={updating || !formik.isValid}
-                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${updating || !formik.isValid
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-green-600 hover:bg-green-700 text-white"
-                            }`}
+                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                            updating || !formik.isValid
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-green-600 hover:bg-green-700 text-white"
+                          }`}
                         >
                           <FaSave className="w-4 h-4" />
                           {updating ? "Saving..." : "Save Changes"}
@@ -425,7 +469,7 @@ const AdminProfile: React.FC = () => {
                 {/* Account Settings */}
                 <div className="bg-white rounded-lg shadow">
                   <div className="px-6 py-4 border-b">
-                    <h2 className="text-xl font-semibold text-gray-800 cursor-default">Admin Account Settings</h2>
+                    <h2 className="text-xl font-semibold text-gray-800 cursor-default">Account Settings</h2>
                   </div>
                   <div className="p-6 space-y-6">
                     <div className="flex items-center gap-4 p-4 border rounded-lg cursor-default">
@@ -440,18 +484,28 @@ const AdminProfile: React.FC = () => {
                       <FaUser className="text-green-500 text-xl" />
                       <div>
                         <p className="font-semibold text-gray-800">Account Type</p>
-                        <p className="text-gray-600">Administrator </p>
+                        <p className="text-gray-600">Standard User</p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-4 p-4 border rounded-lg cursor-default">
                       <FaCalendar className="text-purple-500 text-xl" />
                       <div>
-                        <p className="font-semibold text-gray-800">Admin Since</p>
+                        <p className="font-semibold text-gray-800">Member Since</p>
                         <p className="text-gray-600">
                           {new Date(user?.createdAt || Date.now()).toLocaleDateString()}
                         </p>
                       </div>
+                    </div>
+
+                    {/* Delete Account Button */}
+                    <div className="border-t pt-6">
+                      <button
+                        onClick={handleDeleteAccount}
+                        className="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-colors cursor-pointer"
+                      >
+                        Delete Account
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -464,7 +518,86 @@ const AdminProfile: React.FC = () => {
   );
 };
 
-export default AdminProfile;
+// Separate component for Orders Tab
+const OrdersTab: React.FC<{ orders: Order[]; loading: boolean }> = ({ orders, loading }) => {
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b">
+          <h2 className="text-xl font-semibold text-gray-800 cursor-default">Order History</h2>
+        </div>
+        <div className="p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto cursor-default"></div>
+          <p className="mt-2 text-gray-600 cursor-default">Loading orders...</p>
+        </div>
+      </div>
+    );
+  }
 
+  return (
+    <div className="bg-white rounded-lg shadow">
+      <div className="px-6 py-4 border-b">
+        <h2 className="text-xl font-semibold text-gray-800 cursor-default">Order History</h2>
+      </div>
+      <div className="p-6">
+        {orders.length === 0 ? (
+          <div className="text-center py-8">
+            <FaShoppingBag className="text-gray-400 text-4xl mx-auto mb-4 cursor-default" />
+            <p className="text-gray-600 cursor-default">No orders found</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {orders.map((order) => (
+              <div key={order._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-default">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="font-semibold text-gray-800">
+                      Order #{order._id.slice(-8)}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-green-600">
+                      ${order.total.toFixed(2)}
+                    </p>
+                    <span className={`px-2 py-1 rounded-full text-xs cursor-default ${
+                      order.status === "delivered"
+                        ? "bg-green-100 text-green-800"
+                        : order.status === "shipped"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                </div>
 
+                <div className="space-y-2">
+                  {order.items.map((item, index) => (
+                    <div key={index} className="flex items-center gap-3 text-sm cursor-default">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-12 h-12 object-cover rounded cursor-default"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-800">{item.name}</p>
+                        <p className="text-gray-600">
+                          Qty: {item.quantity} × ${item.price}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
+export default Profile;

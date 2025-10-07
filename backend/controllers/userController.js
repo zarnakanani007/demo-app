@@ -23,7 +23,7 @@ const verifyAdminToken = (req) => {
 // Get All Users
 export const getUsers = async (req, res) => {
   try {
-    verifyAdminToken(req); // ✅ admin check inside controller
+    verifyAdminToken(req);
     const users = await User.find();
     res.json(users);
   } catch (error) {
@@ -34,7 +34,7 @@ export const getUsers = async (req, res) => {
 // Update User
 export const updateUser = async (req, res) => {
   try {
-    verifyAdminToken(req); // ✅ admin check inside controller
+    verifyAdminToken(req);
     const { name, role } = req.body;
 
     const user = await User.findById(req.params.id);
@@ -53,7 +53,7 @@ export const updateUser = async (req, res) => {
 // Delete User
 export const deleteUser = async (req, res) => {
   try {
-    verifyAdminToken(req); // ✅ admin check inside controller
+    verifyAdminToken(req);
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json({ message: "User deleted" });

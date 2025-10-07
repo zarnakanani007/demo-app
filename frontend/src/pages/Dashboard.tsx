@@ -141,7 +141,7 @@ const Dashboard: React.FC = () => {
 
       {/* Analytics Dashboard */}
 
-      <div
+      {/* <div
         onClick={() => navigate("/dashboard/analytics")}
         className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-teal-500"
       >
@@ -154,7 +154,7 @@ const Dashboard: React.FC = () => {
           <h3 className="text-xl font-semibold text-gray-800 mb-2">Analytics</h3>
           <p className="text-gray-600">View sales reports and statistics</p>
         </div>
-      </div>
+      </div> */}
     </div>
 
   );

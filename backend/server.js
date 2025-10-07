@@ -8,6 +8,7 @@ import orderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import emailRoutes from './routes/emailRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import path from "path";
 
 dotenv.config();
@@ -22,8 +23,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/email',emailRoutes)
-app.use('/api/reviews',reviewRoutes)
+app.use('/api/email', emailRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Serve uploads
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
